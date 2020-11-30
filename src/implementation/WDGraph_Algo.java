@@ -1,4 +1,4 @@
-package implemintation;
+package implementation;
 
 public class WDGraph_Algo {
 }
