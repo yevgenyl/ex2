@@ -53,6 +53,7 @@ cmake-build-*/
 *.iml
 .DS_Store
 .idea/
+out
 
 # mpeltonen/sbt-idea plugin
 .idea_modules/
