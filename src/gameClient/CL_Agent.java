@@ -1,8 +1,9 @@
 package gameClient;
-import api.edge_data;
+
 import api.directed_weighted_graph;
-import api.node_data;
+import api.edge_data;
 import api.geo_location;
+import api.node_data;
 import gameClient.util.Point3D;
 import org.json.JSONObject;
 
@@ -11,6 +12,7 @@ public class CL_Agent {
 		private static int _count = 0;
 		private static int _seed = 3331;
 		private int _id;
+	//	private long _key;
 		private geo_location _pos;
 		private double _speed;
 		private edge_data _curr_edge;
@@ -18,8 +20,10 @@ public class CL_Agent {
 		private directed_weighted_graph _gg;
 		private CL_Pokemon _curr_fruit;
 		private long _sg_dt;
+		
 		private double _value;
-
+		
+		
 		public CL_Agent(directed_weighted_graph g, int start_node) {
 			_gg = g;
 			setMoney(0);
@@ -54,8 +58,23 @@ public class CL_Agent {
 				e.printStackTrace();
 			}
 		}
+		//@Override
 		public int getSrcNode() {return this._curr_node.getKey();}
+		public String toJSON() {
+			int d = this.getNextNode();
+			String ans = "{\"Agent\":{"
+					+ "\"id\":"+this._id+","
+					+ "\"value\":"+this._value+","
+					+ "\"src\":"+this._curr_node.getKey()+","
+					+ "\"dest\":"+d+","
+					+ "\"speed\":"+this.getSpeed()+","
+					+ "\"pos\":\""+_pos.toString()+"\""
+					+ "}"
+					+ "}";
+			return ans;	
+		}
 		private void setMoney(double v) {_value = v;}
+	
 		public boolean setNextNode(int dest) {
 			boolean ans = false;
 			int src = this._curr_node.getKey();
@@ -72,21 +91,26 @@ public class CL_Agent {
 		public boolean isMoving() {
 			return this._curr_edge!=null;
 		}
-
 		public String toString() {
+			return toJSON();
+		}
+		public String toString1() {
 			String ans=""+this.getID()+","+_pos+", "+isMoving()+","+this.getValue();	
 			return ans;
 		}
 		public int getID() {
+			// TODO Auto-generated method stub
 			return this._id;
 		}
 	
 		public geo_location getLocation() {
+			// TODO Auto-generated method stub
 			return _pos;
 		}
 
 		
 		public double getValue() {
+			// TODO Auto-generated method stub
 			return this._value;
 		}
 
