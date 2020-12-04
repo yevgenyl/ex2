@@ -1,9 +1,7 @@
 package implementation;
 import api.*;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
+import java.util.*;
 
 public class DWGraph_DS implements directed_weighted_graph{
 
@@ -31,12 +29,19 @@ public class DWGraph_DS implements directed_weighted_graph{
     private HashMap<Integer,HashMap<Integer,edge_data>> E; // The collection of edges.
 
     /**
+     *
+     */
+    private HashMap<Integer,HashMap<Integer,edge_data>> Reverse_E;
+
+    /**
      * Default constructor
      */
     public DWGraph_DS(){
         this.currentKey = -1;
         this.V = new HashMap<>();
         this.E = new HashMap<>();
+        this.Reverse_E = new HashMap<>();
+        edgeSize = nodeSize = MC = 0;
     }
 
     /**
@@ -44,7 +49,22 @@ public class DWGraph_DS implements directed_weighted_graph{
      * @param graph
      */
     public DWGraph_DS(directed_weighted_graph graph){
-
+        if(graph != null) { // null graphs are not accepted.
+            currentKey = -1;
+            V = new HashMap<>(); // Initialize vertices HashMap.
+            E = new HashMap<>(); // Initialize edges HashMap.
+            Reverse_E = new HashMap<>();
+            nodeSize = edgeSize = MC = 0; // Initialize counters to zero.
+            for (node_data v : graph.getV()) { // For each node from old graph.
+                int key1 = v.getKey();
+                addNode(new NodeData(v)); // Create exactly the same node in new the graph.
+                for (edge_data e : graph.getE(key1)) { // For each neighbor e of v copy the key.
+                    int key2 = e.getDest();
+                    addNode(new NodeData(graph.getNode(key2))); // Create exactly the same node in new the graph.
+                    connect(key1, key2, e.getWeight()); // If key1 and key2 were connected in the old graph, then connect them in the new graph.
+                }
+            }
+        }
     }
 
     /**
@@ -71,10 +91,11 @@ public class DWGraph_DS implements directed_weighted_graph{
 
     @Override
     public void addNode(node_data n) {
-        if(n!=null) {
+        if(n!=null && (getNode(n.getKey()) == null)) {
             NodeData nP = (NodeData) n; // A pointer to node_data (n)
             V.put(++currentKey, n); // Insert node_data (n) to the HashMap.
-            E.put(currentKey,new HashMap<>()); // Add node to the edges map.
+            //E.put(currentKey,new HashMap<>()); // Add node to the edges map.
+            //Reverse_E.put(currentKey,new HashMap<>());
             nP.setKey(graph_permission, currentKey); // Set key for specified node with permission (Only this graph class).
             ++nodeSize;
             ++MC;
@@ -89,26 +110,19 @@ public class DWGraph_DS implements directed_weighted_graph{
             node_data n1, n2;
             if((n1 = V.get(src)) != null && (n2 = V.get(dest)) != null){
                 edge_data edge = new EdgeData(src,dest,w);
+                if(E.get(src) == null){
+                    E.put(src,new HashMap<>());
+                }
+                if(Reverse_E.get(dest) == null){
+                    Reverse_E.put(dest,new HashMap<>());
+                }
                 E.get(src).put(dest,edge);
+                Reverse_E.get(dest).put(src,edge); // Put the reverse edge dest -> src information.
+                edgeSize++;
+                MC++;
             }
         }
         //TODO - 30 Nov 2020 - need to Check with boaz about setWeight()
-        /*
-        if(w < 0.0 || (src == dest)) // Negative weights are illegal. Also no need to update if node1 == node2.
-            return;
-        if (hasEdge(node1,node2)){ // If the edge is already exist, then only need to update weight.
-            E.get(node1).put(node2,w);
-            MC++;
-        }else { // If the edge is not already exist.
-            node_info n1,n2;
-            if ((n1 = V.get(node1)) != null && (n2 = V.get(node2)) != null) { // If both vertices exist.
-                E.get(node1).put(node2, w); // Put node2 as a neighbor of node1.
-                E.get(node2).put(node1, w); // Put node1 as a neighbor of node2.
-                eSize++; // Count edge size (+1).
-                MC++; // Count modification (+1).
-            }
-        }
-         */
     }
 
     @Override
@@ -118,36 +132,123 @@ public class DWGraph_DS implements directed_weighted_graph{
 
     @Override
     public Collection<edge_data> getE(int node_id) {
+        if(E.get(node_id) != null) {
+            return E.get(node_id).values();
+        }else {
+            Collection<edge_data> emptyCollection = new LinkedHashSet<>();
+            return emptyCollection;
+        }
+        /*
         if(getNode(node_id) != null) {
             return E.get(node_id).values();
         }else {
             Collection<edge_data> emptyCollection = new LinkedHashSet<>();
             return emptyCollection;
         }
+         */
+    }
+
+    public Collection<edge_data> getEReverse(int node_id){
+        if(Reverse_E.get(node_id) != null) {
+            return Reverse_E.get(node_id).values();
+        }else {
+            Collection<edge_data> emptyCollection = new LinkedHashSet<>();
+            return emptyCollection;
+        }
+        /*
+        if(getNode(node_id) != null) {
+            return Reverse_E.get(node_id).values();
+        }else {
+            Collection<edge_data> emptyCollection = new LinkedHashSet<>();
+            return emptyCollection;
+        }
+         */
     }
 
     @Override
     public node_data removeNode(int key) {
-        return null;
+        node_data toRemove = getNode(key);
+        if(toRemove != null){ // If there is node to remove.
+            Collection<edge_data> reverseEdges = getEReverse(key); // Get the reverse collection of edges.
+            int removedEdges = reverseEdges.size() + getE(key).size(); // number of edges to remove = reverse edges + regular edges.
+            Iterator<edge_data> it = reverseEdges.iterator();
+            while (it.hasNext()){ // For each edge of the specified node (key).
+                edge_data edge = it.next();
+                it.remove();
+                E.get(edge.getSrc()).remove(edge.getDest());
+                if(E.get(edge.getDest()) != null) {
+                    E.get(edge.getDest()).remove(edge.getSrc());
+                }
+                if(getE(edge.getSrc()).size() == 0){ // If after removing edges there is no edges left from this source, then need to remove source.
+                    E.remove(edge.getSrc());
+                }
+                Reverse_E.remove(edge.getSrc());
+            }
+            Reverse_E.remove(key);
+            E.remove(key); // Finally remove the specified node from edges HashMap.
+            V.remove(key); // Finally remove the specified node from vertices HashMap.
+            nodeSize--; // Update the node size.
+            edgeSize -= removedEdges; // Update edge size.
+            MC++; // Update mode count.
+        }
+        return toRemove; // Return a pointer to the removed object.
     }
 
     @Override
     public edge_data removeEdge(int src, int dest) {
-        return null;
+            HashMap<Integer,edge_data> internalMap;
+            edge_data toRemove = null;
+            if((internalMap = E.get(src)) != null) {
+                if((toRemove = internalMap.get(dest)) != null) {
+                    if (src == dest) // If node1 and node2 are the same. no need to do anything.
+                        return null;
+                    Reverse_E.get(dest).remove(src);
+                    E.get(src).remove(dest); // Remove the edge data between node1 to node2.
+                    edgeSize--; // Update edge size.
+                    MC++; // Update mode count.
+                }
+            }
+            return toRemove;
     }
 
     @Override
     public int nodeSize() {
-        return 0;
+        return this.nodeSize;
     }
 
     @Override
     public int edgeSize() {
-        return 0;
+        return this.edgeSize;
     }
 
     @Override
     public int getMC() {
-        return 0;
+        return this.MC;
+    }
+
+    @Override
+    public String toString() {
+        String s = "\n";
+        for(node_data n : getV()){
+            s += "("+n.getKey()+") -> " + getE(n.getKey()).toString() + "\n";
+        }
+        return s;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DWGraph_DS that = (DWGraph_DS) o;
+        return currentKey == that.currentKey &&
+                edgeSize == that.edgeSize &&
+                nodeSize == that.nodeSize &&
+                Objects.equals(V, that.V) &&
+                Objects.equals(E, that.E);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(currentKey, edgeSize, nodeSize, V, E);
     }
 }

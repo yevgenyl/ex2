@@ -19,9 +19,11 @@ public class GeoLocation implements geo_location {
     }
 
     public GeoLocation(geo_location location){
-        this.x = location.x();
-        this.y = location.y();
-        this.z = location.z();
+        if(location != null) {
+            this.x = location.x();
+            this.y = location.y();
+            this.z = location.z();
+        }
     }
 
     @Override
