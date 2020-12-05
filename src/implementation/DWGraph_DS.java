@@ -1,5 +1,6 @@
 package implementation;
 import api.*;
+import implementation.util.GraphJsonDeserializer;
 
 import java.util.*;
 
@@ -20,7 +21,7 @@ public class DWGraph_DS implements directed_weighted_graph{
 
     private int currentKey;
 
-    int edgeSize, nodeSize, MC;
+    private int edgeSize, nodeSize, MC;
 
     /**
      * Directed weighted graph G(V,E) representation using HashMap data structure.
@@ -94,11 +95,32 @@ public class DWGraph_DS implements directed_weighted_graph{
         if(n!=null && (getNode(n.getKey()) == null)) {
             NodeData nP = (NodeData) n; // A pointer to node_data (n)
             V.put(++currentKey, n); // Insert node_data (n) to the HashMap.
-            //E.put(currentKey,new HashMap<>()); // Add node to the edges map.
-            //Reverse_E.put(currentKey,new HashMap<>());
             nP.setKey(graph_permission, currentKey); // Set key for specified node with permission (Only this graph class).
             ++nodeSize;
             ++MC;
+        }
+    }
+
+    /**
+     * Add node with specific key.
+     * Note: This method can be used with permission only.
+     * Only GraphJsonDeserializer owns the permission.
+     * @param permission The permission to use this method.
+     * @param n The node to add to this graph.
+     * @param key The specified key to add.
+     */
+    public void addNodeWithKey(GraphJsonDeserializer.JsonDeserializerPermission permission, node_data n, int key){
+        if(n!=null && (getNode(n.getKey()) == null)) {
+            NodeData nP = (NodeData) n; // A pointer to node_data (n)
+            V.put(key, n); // Insert node_data (n) to the HashMap.
+            nP.setKey(graph_permission, key); // Set key for specified node with permission (Only this graph class).
+            ++nodeSize;
+            ++MC;
+            if(currentKey < key){
+                currentKey = key;
+            }else {
+                currentKey++;
+            }
         }
     }
 
@@ -122,7 +144,6 @@ public class DWGraph_DS implements directed_weighted_graph{
                 MC++;
             }
         }
-        //TODO - 30 Nov 2020 - need to Check with boaz about setWeight()
     }
 
     @Override
@@ -138,14 +159,6 @@ public class DWGraph_DS implements directed_weighted_graph{
             Collection<edge_data> emptyCollection = new LinkedHashSet<>();
             return emptyCollection;
         }
-        /*
-        if(getNode(node_id) != null) {
-            return E.get(node_id).values();
-        }else {
-            Collection<edge_data> emptyCollection = new LinkedHashSet<>();
-            return emptyCollection;
-        }
-         */
     }
 
     public Collection<edge_data> getEReverse(int node_id){
@@ -155,14 +168,6 @@ public class DWGraph_DS implements directed_weighted_graph{
             Collection<edge_data> emptyCollection = new LinkedHashSet<>();
             return emptyCollection;
         }
-        /*
-        if(getNode(node_id) != null) {
-            return Reverse_E.get(node_id).values();
-        }else {
-            Collection<edge_data> emptyCollection = new LinkedHashSet<>();
-            return emptyCollection;
-        }
-         */
     }
 
     @Override
@@ -171,8 +176,8 @@ public class DWGraph_DS implements directed_weighted_graph{
         if(toRemove != null){ // If there is node to remove.
             Collection<edge_data> reverseEdges = getEReverse(key); // Get the reverse collection of edges.
             int removedEdges = reverseEdges.size() + getE(key).size(); // number of edges to remove = reverse edges + regular edges.
-            Iterator<edge_data> it = reverseEdges.iterator();
-            while (it.hasNext()){ // For each edge of the specified node (key).
+            Iterator<edge_data> it = reverseEdges.iterator(); // Get iterator to the collection of reverse edges.
+            while (it.hasNext()){ // For each edge belongs to the specified node (key).
                 edge_data edge = it.next();
                 it.remove();
                 E.get(edge.getSrc()).remove(edge.getDest());

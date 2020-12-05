@@ -18,7 +18,7 @@ public class NodeData implements node_data{
         this.key = -1;
         this.location = null;
         this.weight = -1;
-        this.info = null;
+        this.info = "";
         this.tag = 0;
     }
 

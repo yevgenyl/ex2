@@ -7,7 +7,16 @@ public class GeoLocation implements geo_location {
     private double z;
 
     /**
-     * Initialization constructor
+     * Default constructor.
+     */
+    public GeoLocation(){
+        this.x = -1;
+        this.y = -1;
+        this.z = -1;
+    }
+
+    /**
+     * Initialization constructor.
      * @param x
      * @param y
      * @param z

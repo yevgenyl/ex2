@@ -229,10 +229,8 @@ class DWGraph_DSTest {
         g1.connect(5,1,10);
         g1.connect(6,0,10);
         g1.connect(6,7,10);
-        System.out.println(g1);
         assertEquals(7,g1.edgeSize());
         g1.removeNode(1);
-        System.out.println(g1);
         assertEquals(2,g1.edgeSize());
     }
 

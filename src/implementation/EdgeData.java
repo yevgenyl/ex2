@@ -12,12 +12,25 @@ public class EdgeData implements edge_data{
     private int tag;
 
     /**
+     * Default constructor.
+     */
+    public EdgeData(){
+        this.src = -1;
+        this.dest = -1;
+        this.weight = -1;
+        this.info = "";
+        this.tag = -1;
+    }
+
+    /**
      * Initialization constructor
      */
     public EdgeData(int src, int dest, double weight){
         this.src = src;
         this.dest = dest;
         this.weight = weight;
+        info = "";
+        tag = -1;
     }
 
     /**
