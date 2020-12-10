@@ -54,7 +54,6 @@ cmake-build-*/
 .DS_Store
 .idea/
 /out
-graph.json
 
 # mpeltonen/sbt-idea plugin
 .idea_modules/

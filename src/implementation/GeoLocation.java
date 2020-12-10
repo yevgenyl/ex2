@@ -67,4 +67,13 @@ public class GeoLocation implements geo_location {
         double sum = part1 + part2 + part3; // Sum all parts together according distance formula.
         return Math.sqrt(sum); // Return the square root of the sum according to distance formula.
     }
+
+    @Override
+    public String toString() {
+        return "GeoLocation{" +
+                "x=" + x +
+                ", y=" + y +
+                ", z=" + z +
+                '}';
+    }
 }

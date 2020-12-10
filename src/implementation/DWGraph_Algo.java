@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import implementation.util.AlgoHelper;
 import implementation.util.GraphJsonDeserializer;
+import implementation.util.Pair;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -50,8 +51,8 @@ public class DWGraph_Algo implements dw_graph_algorithms{
         if(n1 != null && n2 != null) { // If both src and dest exist.
             if(n1 == n2) // If it's the same node return zero distance.
                 return 0;
-            dijkstra(n1, n2); // Perform dijkstra algorithm.
-            return algoHelper.getWeight(n2); // After dijkstra the shortest path weight will be stored in the destination node.
+            return dijkstra(n1, n2).getSecond(); // Perform dijkstra algorithm.
+            //return algoHelper.getWeight(n2); // After dijkstra the shortest path weight will be stored in the destination node.
         }else {
             return -1; // If one or both of the nodes are null, it means there is no path between these nodes.
         }
@@ -66,7 +67,7 @@ public class DWGraph_Algo implements dw_graph_algorithms{
                 list.add(n1); // add src nodes to the list.
                 return list;
             }
-            HashMap<Integer, Integer> parentMap = dijkstra(g.getNode(src), g.getNode(dest)); // Perform dijkstra.
+            HashMap<Integer, Integer> parentMap = dijkstra(g.getNode(src), g.getNode(dest)).getFirst(); // Perform dijkstra.
             node_data parent = n2;
             while (parent.getKey() != src) { // get all parents list from dest to src.
                 list.addFirst(parent); // Add this nodes in reverse order to the list.
@@ -175,31 +176,35 @@ public class DWGraph_Algo implements dw_graph_algorithms{
      * @param dest - destination node.
      * @return A HashMap which represents parents hierarchy.
      */
-    private HashMap<Integer,Integer> dijkstra(node_data src, node_data dest){
+    private Pair<HashMap<Integer,Integer>,Double> dijkstra(node_data src, node_data dest){
         HashMap<Integer,Integer> parentMap = new HashMap<>(); // Parents hierarchy.
-        algoHelper = new AlgoHelper<>(); // This class is used to manage temporal data (color, weight etc..).
-        PriorityQueue<node_data> pq = new PriorityQueue<>(16, new CompareByWeight(algoHelper)); // Create a minimum priority queue with comparator (by minimum weight).
+        AlgoHelper<node_data> helper = new AlgoHelper<>(); // This class is used to manage temporal data (color, weight etc..).
+        PriorityQueue<node_data> pq = new PriorityQueue<>(16, new CompareByWeight(helper)); // Create a minimum priority queue with comparator (by minimum weight).
         for(node_data n : g.getV()){
-            algoHelper.storeTemporalWeight(n,Double.MAX_VALUE); // Initialise all weight to infinity.
-            algoHelper.storeTemporalColor(n,"WHITE"); // Mark all as not visited.
+            helper.storeTemporalWeight(n,Double.MAX_VALUE); // Initialise all weight to infinity.
+            helper.storeTemporalColor(n,"WHITE"); // Mark all as not visited.
         }
-        algoHelper.storeTemporalWeight(src,0.0); // Set src node weight to 0 (the weight of a node to himself is 0).
+        helper.storeTemporalWeight(src,0.0); // Set src node weight to 0 (the weight of a node to himself is 0).
         pq.add(src); // Add src node to the priority queue.
         while (!pq.isEmpty()){ // While the is nodes to visit.
             node_data current = pq.poll(); // remove the node with the minimal weight. O(Log(n)) operation.
-            if(algoHelper.getColor(current).equals("WHITE")) { // If the node is not visited.
-                algoHelper.storeTemporalColor(current, "GRAY"); // Mark the node as visited.
+            if(helper.getColor(current).equals("WHITE")) { // If the node is not visited.
+                helper.storeTemporalColor(current, "GRAY"); // Mark the node as visited.
             }else {
                 continue;
             }
             if(current.getKey() == dest.getKey()) { // If with found the destination node. no need to continue searching.
-                return parentMap; // At this point we have all the information we need. Complete function by return operation.
+                Pair<HashMap<Integer,Integer>,Double> pair = new Pair<>();
+                pair.setFirst(parentMap);
+                pair.setSecond(helper.getWeight(dest));
+                return pair;
+                //return parentMap; // At this point we have all the information we need. Complete function by return operation.
             }
             for(edge_data neighbor : g.getE(current.getKey())){ // For all neighbors of current node.
-                if(algoHelper.getColor(g.getNode(neighbor.getDest())).equals("WHITE")) { // If neighbor is not already. visited
-                    double pathDist = algoHelper.getWeight(current) + g.getEdge(current.getKey(), neighbor.getDest()).getWeight(); // Calculate the distance between current node to it's neighbor.
-                    if (Double.compare(pathDist, algoHelper.getWeight(g.getNode(neighbor.getDest()))) == -1) { // If the distance is less than the current neighbor distance, then need to update it.
-                        algoHelper.storeTemporalWeight(g.getNode(neighbor.getDest()),pathDist); // Update neighbors distance to the new smallest distance.
+                if(helper.getColor(g.getNode(neighbor.getDest())).equals("WHITE")) { // If neighbor is not already. visited
+                    double pathDist = helper.getWeight(current) + g.getEdge(current.getKey(), neighbor.getDest()).getWeight(); // Calculate the distance between current node to it's neighbor.
+                    if (Double.compare(pathDist, helper.getWeight(g.getNode(neighbor.getDest()))) == -1) { // If the distance is less than the current neighbor distance, then need to update it.
+                        helper.storeTemporalWeight(g.getNode(neighbor.getDest()),pathDist); // Update neighbors distance to the new smallest distance.
                         parentMap.put(neighbor.getDest(),current.getKey()); // Set current node as parent of this neighbor.
                         pq.add(g.getNode(neighbor.getDest())); // Add the neighbor to the priority queue for further checks.
                     }
