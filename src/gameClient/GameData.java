@@ -8,9 +8,7 @@ import gameClient.util.PokemonJsonDeserializer;
 import implementation.DWGraph_Algo;
 import implementation.DWGraph_DS;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.*;
 
 public class GameData implements game_listener{
     private game_service game; // Reference to the game server.
@@ -20,6 +18,7 @@ public class GameData implements game_listener{
     dw_graph_algorithms graph_algorithms; // A set of algorithms which will operate on this game.
     ArrayList<edge_data> pokemonsEdges; // All the edges of all pokemons.
     GameManager manager;
+    boolean isInUpdate;
 
     /**
      * Initialization constructor.
@@ -41,15 +40,28 @@ public class GameData implements game_listener{
         this.pokemonsEdges = getPokemonsEdgesInfo();
         this.manager = new GameManager();
         manager.register(this);
+        isInUpdate = false;
     }
 
     /**
      * This method updates this class properties by parsing Json objects from the server.
      */
     public void update(){
-        this.pokemons = parsePokemons();
-        this.pokemonsEdges = getPokemonsEdgesInfo();
-        this.agents = parseAgents();
+        synchronized (this){
+            while (isInUpdate){ // If function is consumed by
+                try {
+                    wait(100);
+                }catch (InterruptedException e){
+                    e.printStackTrace();
+                }
+            }
+            isInUpdate = true;
+            this.agents = parseAgents();
+            this.pokemons = parsePokemons();
+            this.pokemonsEdges = getPokemonsEdgesInfo();
+            isInUpdate = false;
+            notifyAll();
+        }
     }
 
     private ArrayList<GamePokemon> parsePokemons(){
@@ -105,17 +117,52 @@ public class GameData implements game_listener{
         return game.isRunning();
     }
 
-    public GamePokemon shortestDistancePokemon(GameAgent agent, LinkedList<GamePokemon> list){
+    public GamePokemon shortestDistancePokemon(GameAgent agent, List<GamePokemon> list){
                 GamePokemon toReturn = null;
                 double dist = Double.MAX_VALUE;
                 for (GamePokemon pokemon : list) {
-                    double current = graph_algorithms.shortestPathDist(agent.getSrc(), pokemon.getEdge().getDest());
+                    double current = graph_algorithms.shortestPathDist(agent.getSrc(), pokemon.getEdge().getSrc());
                     if (current < dist) {
                         dist = current;
                         toReturn = pokemon;
                     }
                 }
                 return toReturn;
+    }
+
+    public GamePokemon mostValuedPokemon(){
+        GamePokemon toReturn = null;
+        double value = Double.MIN_VALUE;
+        for(GamePokemon pokemon : pokemons){
+            if(pokemon.getValue() > value) {
+                value = pokemon.getValue();
+                toReturn = pokemon;
+            }
+        }
+        return toReturn;
+    }
+
+    public PriorityQueue<GamePokemon> mostValuedPokemons(){
+        PriorityQueue<GamePokemon> pokemons = new PriorityQueue<>(10,new PokemonComperator());
+        for(GamePokemon pokemon : getPokemons()){
+            pokemons.add(pokemon);
+        }
+        return pokemons;
+    }
+
+    private class PokemonComperator implements Comparator<GamePokemon> {
+
+        @Override
+        public int compare(GamePokemon o1, GamePokemon o2) {
+            int comp = Double.compare(o1.getValue(),o2.getValue());
+            if(comp == -1){
+                return 1;
+            }else if(comp == 1){
+                return -1;
+            }else {
+                return 0;
+            }
+        }
     }
 
     private ArrayList<edge_data> getPokemonsEdgesInfo(){
@@ -127,7 +174,7 @@ public class GameData implements game_listener{
         return  edges;
     }
 
-    private void updateEdge(GamePokemon fr, directed_weighted_graph g) {
+    public void updateEdge(GamePokemon fr, directed_weighted_graph g) {
         Iterator<node_data> itr = g.getV().iterator();
         while(itr.hasNext()) {
             node_data v = itr.next();

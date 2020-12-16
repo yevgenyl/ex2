@@ -3,12 +3,14 @@ package gameClient;
 import implementation.GeoLocation;
 
 public class GameAgent {
-    int id;
-    double value;
-    int src;
-    int dest;
-    double speed;
-    GeoLocation location;
+    private int id;
+    private double value;
+    private int src;
+    private int dest;
+    private double speed;
+    private GeoLocation location;
+    private GeoLocation velocity;
+    private GeoLocation acceleration;
 
     public GameAgent(int id, double value, int src, int dest, double speed, GeoLocation location){
         this.id = id;
@@ -29,6 +31,10 @@ public class GameAgent {
 
     public double getSpeed() {
         return speed;
+    }
+
+    public void setLocation(GeoLocation location) {
+        this.location = location;
     }
 
     public int getDest() {

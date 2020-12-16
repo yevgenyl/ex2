@@ -3,6 +3,8 @@ package gameClient;
 import api.edge_data;
 import implementation.GeoLocation;
 
+import java.util.Objects;
+
 public class GamePokemon {
     private double value;
     private int type;
@@ -44,6 +46,22 @@ public class GamePokemon {
 
     public GeoLocation getLocation() {
         return location;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        GamePokemon pokemon = (GamePokemon) o;
+        return Double.compare(pokemon.value, value) == 0 &&
+                type == pokemon.type &&
+                Objects.equals(location, pokemon.location) &&
+                Objects.equals(edge, pokemon.edge);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(value, type, location, edge);
     }
 
     @Override

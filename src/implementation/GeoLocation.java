@@ -1,6 +1,8 @@
 package implementation;
 import api.*;
 
+import java.util.Objects;
+
 public class GeoLocation implements geo_location {
     private double x;
     private double y;
@@ -68,12 +70,64 @@ public class GeoLocation implements geo_location {
         return Math.sqrt(sum); // Return the square root of the sum according to distance formula.
     }
 
+    public static GeoLocation add(geo_location g1, geo_location g2){
+        GeoLocation toReturn = new GeoLocation(g1.x()+g2.x(),g1.y()+g2.y(),g1.z()+g2.z());
+        return toReturn;
+    }
+
+    public static GeoLocation sub(geo_location g1, geo_location g2){
+        GeoLocation toReturn = new GeoLocation(g1.x()-g2.x(),g1.y()-g2.y(),g1.z()-g2.z());
+        return toReturn;
+    }
+
+    public static GeoLocation mult(geo_location g1, double scalar){
+        GeoLocation toReturn = new GeoLocation(g1.x()*scalar,g1.y()*scalar,g1.z()*scalar);
+        return toReturn;
+    }
+
+    public static GeoLocation div(geo_location g1, double scalar){
+        GeoLocation toReturn = new GeoLocation(g1.x()/scalar,g1.y()/scalar,g1.z()/scalar);
+        return toReturn;
+    }
+
+    public static double magnitude(geo_location g1){
+        return Math.sqrt(g1.x()*g1.x() + g1.y()*g1.y() + g1.z()*g1.z());
+    }
+
+    public static GeoLocation normalize(geo_location g1){
+        double m = magnitude(g1);
+        if(m !=0 ){
+            return div(g1,m);
+        }else {
+            return new GeoLocation(0,0,0);
+        }
+    }
+
+    public static GeoLocation direction(GeoLocation source, GeoLocation destination){
+        return GeoLocation.sub(destination,source);
+    }
+
     @Override
     public String toString() {
-        return "GeoLocation{" +
+        return "{" +
                 "x=" + x +
                 ", y=" + y +
                 ", z=" + z +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        GeoLocation location = (GeoLocation) o;
+        return Double.compare(location.x, x) == 0 &&
+                Double.compare(location.y, y) == 0 &&
+                Double.compare(location.z, z) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(x, y, z);
     }
 }
