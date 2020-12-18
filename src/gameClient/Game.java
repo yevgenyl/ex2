@@ -6,10 +6,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import implementation.util.Pair;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.PriorityQueue;
+import java.util.*;
 
 public class Game implements Runnable{
     private static game_service game;
@@ -29,6 +26,11 @@ public class Game implements Runnable{
     Pair<Long, state>[] states;
     int id, level;
 
+    //Testing improved algorithm
+    long[][] timesManager;
+    long last_sleep;
+    final int ID = 0, SLEEP = 1, COMPLETE = 2, STATE = 3;
+
     public Game(int id, int level){
         this.id = id;
         this.level = level;
@@ -41,6 +43,36 @@ public class Game implements Runnable{
             Arrays.sort(delay); // Sort delays array (delay: the state between catching pokemon to end of edge).
             if(delay[0] <= 0) {
                 for (int agentID = 0; agentID < numberOfAgents; agentID++) {
+                    //Testing improved algorithm
+                    if(timesManager[agentID][STATE] != 2) { // only for agents who don't need to complete move
+                        timesManager[agentID][SLEEP] = timesManager[agentID][SLEEP] - last_sleep; // Subtract last sleep time from remaining sleep time for each agent.
+                    }else {
+                        timesManager[agentID][STATE] = -1;
+                        continue;
+                    }
+                    //System.out.println("Sleep: "+timesManager[agentID][SLEEP]);
+                    int agentIndexInTimesManager = 0;
+                    boolean needToContinue = false; // Set flag for loop continue (If no need to calculate agent's times).
+                    for(int i = 0; i < timesManager.length; i++){ // Find current agent
+                        if(timesManager[i][ID] == agentID){ // If agent was found
+                            agentIndexInTimesManager = i;
+                            if(timesManager[i][SLEEP] <= 0){ // Make sure not to throw "timeout value is negative" exception.
+                                timesManager[i][SLEEP] = 0;
+                            }
+                            if(timesManager[i][SLEEP] <= 0 && timesManager[i][COMPLETE] == -1) { // this line means the agent completed sleep tasks, so need to update times.
+                                needToUpdate[(int) timesManager[i][ID]] = true;
+                                needToContinue = false;
+                                break;
+                            }
+                            else {
+                                needToContinue = true;
+                                break;
+                            }
+                        }
+                    }
+                    if(needToContinue)
+                        continue;
+
                     data.getManager().notifyObserver(); // Update data from server.
                     if (needToUpdate[agentID]) { // Agent finished path, so need to calculate new path.
                         updateAgentPath(agentID); // Update the agent path.
@@ -59,6 +91,8 @@ public class Game implements Runnable{
                             times[agentID] = sleepTime;
                             states[agentID].setFirst(sleepTime);
                             states[agentID].setSecond(state.RELAX);
+                            timesManager[agentIndexInTimesManager][SLEEP] = sleepTime;
+                            timesManager[agentIndexInTimesManager][STATE] = 1;
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -67,7 +101,46 @@ public class Game implements Runnable{
             }else {
                 onDelay = true;
             }
-            manageTimes();
+            //Testing improved algorithm
+            long minimum = Long.MAX_VALUE;
+            int minimumIndex = 0;
+            for(int i = 0; i < timesManager.length; i++){
+                if(timesManager[i][SLEEP] < minimum) {
+                    minimum = timesManager[i][SLEEP];
+                    minimumIndex = i;
+                }
+            }
+            try {
+                //System.out.println(timesManager[minimumIndex][STATE]);
+                if(timesManager[minimumIndex][STATE] == 1){
+                    Thread.sleep(minimum+1);
+                    game.move();
+                    data.getManager().notifyObserver();
+                }else {
+                    if(timesManager[minimumIndex][STATE] == -1){ // After catching pokemon state
+                        game.move();
+                        data.getManager().notifyObserver();
+                        Thread.sleep(minimum);
+                        game.move();
+                        data.getManager().notifyObserver();
+                    }else {
+                        //game.move();
+                        //data.getManager().notifyObserver();
+                        Thread.sleep(minimum);
+                        game.move();
+                        data.getManager().notifyObserver();
+                    }
+                }
+            }catch (InterruptedException e){
+                e.printStackTrace();
+            }
+            if(timesManager[minimumIndex][COMPLETE] != -1){ // If agent is in the middle of catch, then need to complete the edge.
+                timesManager[minimumIndex][SLEEP] = timesManager[minimumIndex][COMPLETE];
+                timesManager[minimumIndex][COMPLETE] = -1;
+                timesManager[minimumIndex][STATE] = 2;
+            }
+            last_sleep = minimum; // Save last sleep time for calculation at the next iteration.
+            //manageTimes();
         }
         System.out.println("End game");
         System.out.println(game);
@@ -100,6 +173,17 @@ public class Game implements Runnable{
             needToUpdate[i] = true; // Set flag (needToUpdate) true by default.
         for(int i =0; i < numberOfAgents; i++)
             delay[i] = 0;
+
+        //Testing improved algorithm
+        timesManager = new long[numberOfAgents][];
+        for(int i = 0; i < numberOfAgents; i++) {
+            timesManager[i] = new long[4];
+            timesManager[i][ID] = i; // Agent id
+            timesManager[i][SLEEP] = 0; // Agent sleep time
+            timesManager[i][COMPLETE] = -1; // Agent complete time. -1 if none.
+            timesManager[i][STATE] = -1;
+        }
+        last_sleep = 0; // Last actual sleep time of the thread (minimum sleep).
     }
 
     private void manageTimes(){
@@ -216,6 +300,7 @@ public class Game implements Runnable{
         GameAgent agent = data.getAgents().get(agentID);
         visited.put(agentID,-1);
         GamePokemon pokemon = data.shortestDistancePokemon(agent, data.getPokemons());
+
         boolean targeted = false;
         for(Integer src : visited.values()){
             if(pokemon.getEdge().getSrc() == src)
@@ -224,6 +309,7 @@ public class Game implements Runnable{
         if(targeted){
             pokemon = data.mostValuedPokemon();
         }
+
         visited.put(agentID, pokemon.getEdge().getSrc());
         List<node_data> path = data.getGraph_algorithms().shortestPath(agent.getSrc(), pokemon.getEdge().getSrc());
         agentsPath[agentID] = path;
@@ -235,7 +321,7 @@ public class Game implements Runnable{
     private void moveAgent(GameAgent agent, int agentID, List<node_data> path){
         //pathPointer = 1;
         pathIndex[agentID] = 1;
-        needToUpdate[agentID] = false;
+        //needToUpdate[agentID] = false;
         try {
             game.chooseNextEdge(agent.getId(), agentsPath[agentID].get(pathIndex[agentID]).getKey()); // Choose next edge as next node in path.
             //game.move();
@@ -244,10 +330,16 @@ public class Game implements Runnable{
             long sleepTime = timeToComplete(distanceFromTarget, data.getAgents().get(agentID).getSpeed(), 1000); // how much time to sleep before reaching the end of edge.
             times[agentID] = sleepTime;
             states[agentID].setFirst(sleepTime);
+
+            //Testing improved algorithm
             states[agentID].setSecond(state.RELAX);
+            for(int i = 0; i < timesManager.length; i++) { // Find current agent
+                if (timesManager[i][ID] == agentID) {
+                    timesManager[i][SLEEP] = sleepTime;
+                    timesManager[i][STATE] = 1;
+                }
+            }
             //Thread.sleep(sleepTime); // While we sleeping, server is moving the agent.
-            //game.move(); // Move agent
-            //data.getManager().notifyObserver(); // Update GUI and game board.
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -269,6 +361,18 @@ public class Game implements Runnable{
             beforeCatchTime[agentID] = sleepTime;
             states[agentID].setFirst(sleepTime);
             states[agentID].setSecond(state.CATCH);
+
+            //Testing improved algorithm
+            int agentIndexInTimesManager = 0;
+            for(int i = 0; i < timesManager.length; i++) { // Find current agent
+                if (timesManager[i][ID] == agentID) {
+                    agentIndexInTimesManager = i;
+                }
+            }
+            timesManager[agentIndexInTimesManager][SLEEP] = sleepTime;
+            timesManager[agentIndexInTimesManager][STATE] = 0;
+            System.out.println("Time before catch "+sleepTime);
+
             //game.move();
             //data.getManager().notifyObserver(); // Update GUI and game board.
             double remainedDistance = distanceFromRatio(data.getGraph().getNode(dest),data.getGraph().getNode(src),pokemon.getLocation(),weight);
@@ -277,7 +381,15 @@ public class Game implements Runnable{
             //Thread.sleep(sleepTime);
             //game.move();
             //data.getManager().notifyObserver(); // Update GUI and game board.
-            delay[agentID] = afterCatchTime[agentID]-beforeCatchTime[agentID];
+
+            //Testing improved algorithm (Maybe need to get back).
+            //delay[agentID] = afterCatchTime[agentID]-beforeCatchTime[agentID];
+
+            //Testing improved algorithm
+            timesManager[agentIndexInTimesManager][COMPLETE] = sleepTime;
+            System.out.println("Time after catch "+sleepTime);
+            //Testing improved algorithm
+            needToUpdate[agentID]=true;
         } catch (Exception e) {
             e.printStackTrace();
         }

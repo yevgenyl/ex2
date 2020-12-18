@@ -16,7 +16,7 @@ public class GameData implements game_listener{
     ArrayList<GamePokemon> pokemons; // A list of pokemons that should be placed on the graph.
     ArrayList<GameAgent> agents; // A list of agents that are currently on the graph.
     dw_graph_algorithms graph_algorithms; // A set of algorithms which will operate on this game.
-    ArrayList<edge_data> pokemonsEdges; // All the edges of all pokemons.
+    ArrayList<edge_data> pokemonsEdges; // The edges on which the pokemons located.
     GameManager manager;
     boolean isInUpdate;
 
