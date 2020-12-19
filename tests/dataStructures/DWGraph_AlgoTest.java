@@ -1,4 +1,4 @@
-package implementation;
+package dataStructures;
 import api.*;
 
 import org.junit.jupiter.api.Test;
@@ -10,6 +10,32 @@ import java.util.LinkedList;
 import java.util.Random;
 
 class DWGraph_AlgoTest {
+
+    @Test
+     void testCopyGraph(){
+        directed_weighted_graph g = graphCreator(5,5);
+        System.out.println(g);
+        dw_graph_algorithms ga = new DWGraph_Algo();
+        ga.init(g);
+        directed_weighted_graph g2 = ga.copy();
+        System.out.println(g);
+        System.out.println(g2);
+        assertEquals(g,g2);
+        double weight = g.getEdge(0,3).getWeight();
+        g.removeEdge(0,3);
+        assertFalse(g.equals(g2));
+        g.connect(0,3,weight);
+        assertTrue(g.equals(g2));
+        g.removeEdge(0,3);
+        g.connect(0,3,3);
+        assertFalse(g.equals(g2));
+        g.connect(0,3,weight);
+        assertFalse(g.equals(g2));
+        g.removeEdge(0,3);
+        g.connect(0,3,weight);
+        assertTrue(g.equals(g2));
+    }
+
 
     @Test
     void testShortestPathDist(){
@@ -28,8 +54,10 @@ class DWGraph_AlgoTest {
         dw_graph_algorithms ga = new DWGraph_Algo();
         ga.init(g);
         assertTrue(Double.compare(45,ga.shortestPathDist(1,4)) == 0);
+        assertTrue(Double.compare(40,ga.shortestPathDist(1,3)) == 0);
         assertEquals(0,ga.shortestPathDist(1,1));
         assertEquals(-1,ga.shortestPathDist(1,200));
+        assertEquals(-1,ga.shortestPathDist(0,1));
     }
 
     @Test
@@ -52,6 +80,9 @@ class DWGraph_AlgoTest {
         assertNull(ga.shortestPath(1,10));
         assertEquals(expectedPath,ga.shortestPath(1,4));
         assertEquals(1,ga.shortestPath(1,1).size());
+        g.addNode(new NodeData());
+        assertNull(ga.shortestPath(1,8));
+        assertNotNull(ga.shortestPath(1,7));
     }
 
     @Test
@@ -73,6 +104,10 @@ class DWGraph_AlgoTest {
         dw_graph_algorithms ga2 = new DWGraph_Algo();
         ga2.init(g2);
         assertTrue(ga2.isConnected());
+        directed_weighted_graph g3 = new DWGraph_DS();
+        dw_graph_algorithms ga3 = new DWGraph_Algo();
+        ga3.init(g3);
+        assertTrue(ga3.isConnected());
     }
 
     @Test

@@ -1,8 +1,11 @@
-package implementation;
+package dataStructures;
 import api.*;
-import implementation.util.GraphJsonDeserializer;
-
+import dataStructures.util.GraphJsonDeserializer;
 import java.util.*;
+
+/**
+ * This class represent an undirected positive weighted graph data structure G(V,E).
+ */
 
 public class DWGraph_DS implements directed_weighted_graph{
 
@@ -19,9 +22,9 @@ public class DWGraph_DS implements directed_weighted_graph{
     public static final class GraphPermission {private GraphPermission(){}}
     private static final GraphPermission graph_permission = new GraphPermission();
 
-    private int currentKey;
+    private int currentKey; // The current last key inside the graph.
 
-    private int edgeSize, nodeSize, MC;
+    private int edgeSize, nodeSize, MC; // The number of edges, the number of nodes and the current mode count.
 
     /**
      * Directed weighted graph G(V,E) representation using HashMap data structure.
@@ -30,7 +33,7 @@ public class DWGraph_DS implements directed_weighted_graph{
     private HashMap<Integer,HashMap<Integer,edge_data>> E; // The collection of edges.
 
     /**
-     *
+     * A HashMap representing the opposite edged (Which may not exist in the original graph).
      */
     private HashMap<Integer,HashMap<Integer,edge_data>> Reverse_E;
 
@@ -47,7 +50,7 @@ public class DWGraph_DS implements directed_weighted_graph{
 
     /**
      * Copy constructor
-     * @param graph
+     * @param graph - performs a deep copy of this graph.
      */
     public DWGraph_DS(directed_weighted_graph graph){
         if(graph != null) { // null graphs are not accepted.
@@ -55,16 +58,19 @@ public class DWGraph_DS implements directed_weighted_graph{
             V = new HashMap<>(); // Initialize vertices HashMap.
             E = new HashMap<>(); // Initialize edges HashMap.
             Reverse_E = new HashMap<>();
-            nodeSize = edgeSize = MC = 0; // Initialize counters to zero.
             for (node_data v : graph.getV()) { // For each node from old graph.
                 int key1 = v.getKey();
-                addNode(new NodeData(v)); // Create exactly the same node in new the graph.
+                addNodeWithKey(graph_permission,new NodeData(),key1); // Create exactly the same node in new the graph.
                 for (edge_data e : graph.getE(key1)) { // For each neighbor e of v copy the key.
                     int key2 = e.getDest();
-                    addNode(new NodeData(graph.getNode(key2))); // Create exactly the same node in new the graph.
-                    connect(key1, key2, e.getWeight()); // If key1 and key2 were connected in the old graph, then connect them in the new graph.
+                    addNodeWithKey(graph_permission,new NodeData(),key2);// Create exactly the same node in new the graph.
+                    connect(key1, key2, e.getWeight()); // If key1 and key2 were connected in the old graph, then connect this nodes in the new graph.
                 }
             }
+            nodeSize = graph.nodeSize();
+            edgeSize = graph.edgeSize();
+            MC = graph.getMC();
+            currentKey = ((DWGraph_DS)(graph)).currentKey;
         }
     }
 
@@ -78,6 +84,13 @@ public class DWGraph_DS implements directed_weighted_graph{
         return V.get(key);
     }
 
+    /**
+     * returns the data of the edge (src,dest), null if none.
+     * Note: this method should run in O(1) time.
+     * @param src - the source key.
+     * @param dest - the destination key.
+     * @return the edge data (src to dest).
+     */
     @Override
     public edge_data getEdge(int src, int dest) {
         HashMap<Integer,edge_data> internalMap;
@@ -90,6 +103,11 @@ public class DWGraph_DS implements directed_weighted_graph{
         return null;
     }
 
+    /**
+     * adds a new node to the graph with the given node_data.
+     * Note: this method should run in O(1) time.
+     * @param n - the node to be added.
+     */
     @Override
     public void addNode(node_data n) {
         if(n!=null && (getNode(n.getKey()) == null)) {
@@ -98,6 +116,29 @@ public class DWGraph_DS implements directed_weighted_graph{
             nP.setKey(graph_permission, currentKey); // Set key for specified node with permission (Only this graph class).
             ++nodeSize;
             ++MC;
+        }
+    }
+
+    /**
+     * Add node with specific key.
+     * Note: This method can be used with permission only.
+     * Only DWGraph_DS owns the permission.
+     * @param permission The permission to use this method.
+     * @param n The node to add to this graph.
+     * @param key The specified key to add.
+     */
+    public void addNodeWithKey(GraphPermission permission, node_data n, int key){
+        if(n!=null && (getNode(n.getKey()) == null)) {
+            NodeData nP = (NodeData) n; // A pointer to node_data (n)
+            V.put(key, n); // Insert node_data (n) to the HashMap.
+            nP.setKey(graph_permission, key); // Set key for specified node with permission (Only this graph class).
+            ++nodeSize;
+            ++MC;
+            if(currentKey < key){
+                currentKey = key;
+            }else {
+                currentKey++;
+            }
         }
     }
 
@@ -124,6 +165,13 @@ public class DWGraph_DS implements directed_weighted_graph{
         }
     }
 
+    /**
+     * Connects an edge with weight w between node src to node dest.
+     * * Note: this method should run in O(1) time.
+     * @param src - the source of the edge.
+     * @param dest - the destination of the edge.
+     * @param w - positive weight representing the cost (aka time, price, etc) between src-->dest.
+     */
     @Override
     public void connect(int src, int dest, double w) {
         if(w < 0.0 || (src == dest)) // Negative weights are illegal. Also we don't need to update if node1 == node2.
@@ -146,11 +194,24 @@ public class DWGraph_DS implements directed_weighted_graph{
         }
     }
 
+    /**
+     * This method returns a pointer (shallow copy) for the
+     * collection representing all the nodes in the graph.
+     * Note: this method should run in O(1) time.
+     * @return Collection<node_data> the collection of nodes.
+     */
     @Override
     public Collection<node_data> getV() {
         return V.values();
     }
 
+    /**
+     * This method returns a pointer (shallow copy) for the
+     * collection representing all the edges getting out of
+     * the given node (all the edges starting (source) at the given node).
+     * Note: this method should run in O(k) time, k being the collection size.
+     * @return Collection<edge_data> the collection of neighbors of node_id.
+     */
     @Override
     public Collection<edge_data> getE(int node_id) {
         if(E.get(node_id) != null) {
@@ -161,6 +222,11 @@ public class DWGraph_DS implements directed_weighted_graph{
         }
     }
 
+    /**
+     * This method returns a pointer (shallow copy) for the
+     * collection representing all reverse edged (may not exist in the real graph).
+     * @return Collection<edge_data> the collection of reverse edges.
+     */
     public Collection<edge_data> getEReverse(int node_id){
         if(Reverse_E.get(node_id) != null) {
             return Reverse_E.get(node_id).values();
@@ -170,6 +236,13 @@ public class DWGraph_DS implements directed_weighted_graph{
         }
     }
 
+    /**
+     * Deletes the node (with the given ID) from the graph -
+     * and removes all edges which starts or ends at this node.
+     * This method should run in O(k), V.degree=k, as all the edges should be removed.
+     * @return the data of the removed node (null if none).
+     * @param key - the key of the node to be removed.
+     */
     @Override
     public node_data removeNode(int key) {
         node_data toRemove = getNode(key);
@@ -199,6 +272,13 @@ public class DWGraph_DS implements directed_weighted_graph{
         return toRemove; // Return a pointer to the removed object.
     }
 
+    /**
+     * Deletes the edge from the graph,
+     * Note: this method should run in O(1) time.
+     * @param src - the source of the edge (node_id).
+     * @param dest - the destination of the edge (node_id).
+     * @return the data of the removed edge (null if none).
+     */
     @Override
     public edge_data removeEdge(int src, int dest) {
             HashMap<Integer,edge_data> internalMap;
@@ -216,21 +296,38 @@ public class DWGraph_DS implements directed_weighted_graph{
             return toRemove;
     }
 
+    /** Returns the number of vertices (nodes) in the graph.
+     * Note: this method should run in O(1) time.
+     * @return - the current number of nodes in the graph.
+     */
     @Override
     public int nodeSize() {
         return this.nodeSize;
     }
 
+    /**
+     * Returns the number of edges (assume directional graph).
+     * Note: this method should run in O(1) time.
+     * @return - the current number of edges in the graph.
+     */
     @Override
     public int edgeSize() {
         return this.edgeSize;
     }
 
+    /**
+     * Returns the Mode Count - for testing changes in the graph.
+     * @return - the current number of modification in the graph.
+     */
     @Override
     public int getMC() {
         return this.MC;
     }
 
+    /**
+     * Override of the default toString method.
+     * @return - a string representation of this graph.
+     */
     @Override
     public String toString() {
         String s = "\n";
@@ -240,6 +337,11 @@ public class DWGraph_DS implements directed_weighted_graph{
         return s;
     }
 
+    /**
+     * Override of th equals method (inherited from Object).
+     * @param o - the other graph.
+     * @return true/false depending on if the two objects are equal.
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -252,6 +354,10 @@ public class DWGraph_DS implements directed_weighted_graph{
                 Objects.equals(E, that.E);
     }
 
+    /**
+     * Override of the hashCode method (inherited from Object).
+     * @return the hash sum.
+     */
     @Override
     public int hashCode() {
         return Objects.hash(currentKey, edgeSize, nodeSize, V, E);

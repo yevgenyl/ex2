@@ -1,14 +1,14 @@
 package gameClient.util;
 import api.*;
-
 import com.google.gson.*;
-import gameClient.GamePokemon;
-import implementation.DWGraph_DS;
-import implementation.GeoLocation;
-import implementation.NodeData;
-
+import dataStructures.DWGraph_DS;
+import dataStructures.GeoLocation;
+import dataStructures.NodeData;
 import java.lang.reflect.Type;
-import java.util.List;
+
+/**
+ * This class is responsible for parsing the Json object representing the graph on which the game will operate on (at the specific scenario).
+ */
 
 public class GameGraphJsonDeserializer implements JsonDeserializer<directed_weighted_graph> {
     @Override
@@ -19,8 +19,8 @@ public class GameGraphJsonDeserializer implements JsonDeserializer<directed_weig
         for(JsonElement nodeObject : nodesArray){
             node_data node = new NodeData();
             JsonObject object = nodeObject.getAsJsonObject();
-            String[] cordiantes = object.get("pos").getAsString().split(",");
-            node.setLocation(new GeoLocation(Double.parseDouble(cordiantes[0]),Double.parseDouble(cordiantes[1]),Double.parseDouble(cordiantes[2])));
+            String[] coordinates = object.get("pos").getAsString().split(",");
+            node.setLocation(new GeoLocation(Double.parseDouble(coordinates[0]),Double.parseDouble(coordinates[1]),Double.parseDouble(coordinates[2])));
             graph.addNode(node);
         }
         JsonArray edgesArray = jsonObject.get("Edges").getAsJsonArray();

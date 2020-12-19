@@ -1,7 +1,10 @@
-package implementation;
+package dataStructures;
 import api.*;
-
 import java.util.Objects;
+
+/**
+ * This class represents a geo location consists of long,lat,alt (x,y,z).
+ */
 
 public class GeoLocation implements geo_location {
     private double x;
@@ -19,9 +22,9 @@ public class GeoLocation implements geo_location {
 
     /**
      * Initialization constructor.
-     * @param x
-     * @param y
-     * @param z
+     * @param x the x value of this coordinate.
+     * @param y the y value of this coordinate.
+     * @param z the z value of this coordinate.
      */
     public GeoLocation(double x, double y, double z){
         this.x = x;
@@ -29,6 +32,10 @@ public class GeoLocation implements geo_location {
         this.z = z;
     }
 
+    /**
+     * Copy constructor
+     * @param location - the  other location object to copy from.
+     */
     public GeoLocation(geo_location location){
         if(location != null) {
             this.x = location.x();
@@ -37,16 +44,28 @@ public class GeoLocation implements geo_location {
         }
     }
 
+    /**
+     * Returns the x value of this coordinate.
+     * @return the x value of the coordinate.
+     */
     @Override
     public double x() {
         return this.x;
     }
 
+    /**
+     * Returns the y value of this coordinate.
+     * @return the y value of this coordinate.
+     */
     @Override
     public double y() {
         return this.y;
     }
 
+    /**
+     * Returns the z value of this coordinate.
+     * @return the z value of this coordinate.
+     */
     @Override
     public double z() {
         return this.z;
@@ -70,43 +89,10 @@ public class GeoLocation implements geo_location {
         return Math.sqrt(sum); // Return the square root of the sum according to distance formula.
     }
 
-    public static GeoLocation add(geo_location g1, geo_location g2){
-        GeoLocation toReturn = new GeoLocation(g1.x()+g2.x(),g1.y()+g2.y(),g1.z()+g2.z());
-        return toReturn;
-    }
-
-    public static GeoLocation sub(geo_location g1, geo_location g2){
-        GeoLocation toReturn = new GeoLocation(g1.x()-g2.x(),g1.y()-g2.y(),g1.z()-g2.z());
-        return toReturn;
-    }
-
-    public static GeoLocation mult(geo_location g1, double scalar){
-        GeoLocation toReturn = new GeoLocation(g1.x()*scalar,g1.y()*scalar,g1.z()*scalar);
-        return toReturn;
-    }
-
-    public static GeoLocation div(geo_location g1, double scalar){
-        GeoLocation toReturn = new GeoLocation(g1.x()/scalar,g1.y()/scalar,g1.z()/scalar);
-        return toReturn;
-    }
-
-    public static double magnitude(geo_location g1){
-        return Math.sqrt(g1.x()*g1.x() + g1.y()*g1.y() + g1.z()*g1.z());
-    }
-
-    public static GeoLocation normalize(geo_location g1){
-        double m = magnitude(g1);
-        if(m !=0 ){
-            return div(g1,m);
-        }else {
-            return new GeoLocation(0,0,0);
-        }
-    }
-
-    public static GeoLocation direction(GeoLocation source, GeoLocation destination){
-        return GeoLocation.sub(destination,source);
-    }
-
+    /**
+     * Override of the toString method.
+     * @return a string representation of this coordinate.
+     */
     @Override
     public String toString() {
         return "{" +
@@ -116,6 +102,11 @@ public class GeoLocation implements geo_location {
                 '}';
     }
 
+    /**
+     * Override if the equals method.
+     * @param o - the other geo location object to compare with.
+     * @return true/false depending on if these two objects are equal.
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -126,6 +117,10 @@ public class GeoLocation implements geo_location {
                 Double.compare(location.z, z) == 0;
     }
 
+    /**
+     * Override of the hashCode method.
+     * @return the hash sum of this object.
+     */
     @Override
     public int hashCode() {
         return Objects.hash(x, y, z);

@@ -1,14 +1,15 @@
-package implementation.util;
-
+package dataStructures.util;
 import com.google.gson.*;
-import implementation.DWGraph_DS;
+import dataStructures.DWGraph_DS;
 import api.*;
-import implementation.EdgeData;
-import implementation.GeoLocation;
-import implementation.NodeData;
-
+import dataStructures.GeoLocation;
+import dataStructures.NodeData;
 import java.lang.reflect.Type;
 import java.util.Map;
+
+/**
+ * This class is responsible for parsing Json objects which represents an undirected positive weighted graphs.
+ */
 
 public class GraphJsonDeserializer implements JsonDeserializer<DWGraph_DS> {
 

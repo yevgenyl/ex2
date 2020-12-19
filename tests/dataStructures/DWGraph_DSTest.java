@@ -1,4 +1,4 @@
-package implementation;
+package dataStructures;
 import api.*;
 
 import org.junit.jupiter.api.AfterAll;
@@ -204,6 +204,56 @@ class DWGraph_DSTest {
     }
 
     /**
+     * Create two graphs (each one with 20 vertices)
+     * Remove nodes, connect edges an check equals.
+     */
+    @Test
+    void testEdges(){
+        directed_weighted_graph g1 = graphCreator(20, 0);
+        directed_weighted_graph g2 = graphCreator(20, 0);
+
+        assertTrue(g1.equals(g2));
+        g2.removeNode(1);
+        assertFalse(g1.equals(g2));
+
+        g1.removeNode(2);
+        assertFalse(g1.equals(g2));
+
+        directed_weighted_graph g3 = graphCreator(20, 0);
+        directed_weighted_graph g4 = graphCreator(20, 0);
+
+        g3.connect(1, 2, 1);
+        g4.connect(3, 4, 1);
+        assertFalse(g1.equals(g2));
+
+        g3.connect(4, 3, 2);
+        g4.connect(2, 1, 2);
+        assertFalse(g1.equals(g2));
+
+        g3.connect(1, 2, 2);
+        g4.connect(3, 4, 2);
+        assertFalse(g1.equals(g2));
+    }
+
+    /**
+     * Creates a graph with 10 vertices.
+     * connect all edges.
+     */
+    @Test
+    void checMC(){
+        directed_weighted_graph g1 = graphCreator(10, 0);
+        assertEquals(g1.getMC(),10);
+
+        for(int i=0; i<9; i++)
+            g1.connect(i, i+1, i+1);
+        assertEquals(g1.getMC(), 19);
+
+        for(int i=0; i<9; i++)
+            g1.connect(i, i+1, i+1);
+        assertEquals(g1.getMC(), 19);
+    }
+
+    /**
      * Test graph's nodeSize() method.
      */
     @Test
@@ -240,7 +290,7 @@ class DWGraph_DSTest {
      * Private function for creating random graph with seed.
      * @param v - number of vertices.
      * @param e - number of edges.
-     * @return
+     * @return a directed positive weighted graph.
      */
     private directed_weighted_graph graphCreator(int v, int e){
         directed_weighted_graph g = new DWGraph_DS();

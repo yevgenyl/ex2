@@ -1,7 +1,6 @@
 package gameClient;
 import api.node_data;
 import api.*;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -10,31 +9,24 @@ import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * This class is responsible for showing a visual form of the game graph (map) with all it's objects (pokemons, agents..).
+ */
+
 public class GamePanel extends JPanel implements ActionListener{
 
-    GameData data;
-    GameResources resources;
-    ArrayList<Image> pokemonsRes;
-    ArrayList<Image> agentsRes;
-    ArrayList<Image> backgroundsRes;
-    ArrayList<Image> nodesRes;
-    long seed;
-    double minX, minY, maxX, maxY;
-    int widthMargin , heightMargin;
-    Timer timer;
+    GameData data; // The data if the game.
+    GameResources resources; // The game resources class (holds images).
+    ArrayList<Image> pokemonsRes, agentsRes, backgroundsRes, nodesRes;
+    long seed; // desired seed for Random class usages.
+    double minX, minY, maxX, maxY; // Min/Max values of the geo location which represents the graph nodes.
+    int widthMargin , heightMargin; // The desired width/height margins.
+    Timer timer; // A timer used to display this panel at update rate of 60 milliseconds.
 
-    public GamePanel(){
-        super();
-        resources = new GameResources();
-        pokemonsRes = resources.getPokemonResources();
-        agentsRes = resources.getAgentResources();
-        backgroundsRes = resources.getBackgroundsResources();
-        nodesRes = resources.getNodesResources();
-        seed = (long) (Math.random()*30000);
-        timer = new Timer(60, this);
-        timer.start();
-    }
-
+    /**
+     * Initialization constructor based on the game data (graph, agents, pokemons.. etc).
+     * @param data - the data of the current scenario.
+     */
     public GamePanel(GameData data){
         super();
         this.data = data;
@@ -50,7 +42,7 @@ public class GamePanel extends JPanel implements ActionListener{
 
     /**
      * Updates this panel
-     * @param data
+     * @param data - the data of the current scenario.
      */
     public void update(GameData data){
         this.data = data;
@@ -63,20 +55,29 @@ public class GamePanel extends JPanel implements ActionListener{
         repaint();
     }
 
+    /**
+     * Override of the default painComponent method.
+     * @param g - the graphics object.
+     */
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Random random = new Random();
-        random.setSeed(seed);
+        random.setSeed(seed); // Used for generating random background.
         Graphics2D g2D = (Graphics2D) g;
-        g2D.drawImage(backgroundsRes.get(random.nextInt(backgroundsRes.size())), 0, 0,getWidth(),getHeight(), null); // Background
-        drawGraph(g);
-        drawPokemons(g);
-        drawAgents(g);
-        drawTimer(g);
-        //drawScore(g);
+        g2D.drawImage(backgroundsRes.get(random.nextInt(backgroundsRes.size())), 0, 0,getWidth(),getHeight(), null); // Draw background.
+        drawGraph(g); // Draws the game graph.
+        drawPokemons(g); // Draws the game pokemons.
+        drawAgents(g); // Draws the game agents.
+        drawTimer(g); // Draws the game Timer.
+        drawScore(g); // Draws the game current score.
+        //drawMoves(g); // Draws the game current number of moves.
     }
 
+    /**
+     * Draws the graph based on the game data.
+     * @param g the graphics object.
+     */
     private void drawGraph(Graphics g){
         for(node_data node : data.getGraph().getV()){
             for(edge_data edge : data.getGraph().getE(node.getKey())){
@@ -87,18 +88,22 @@ public class GamePanel extends JPanel implements ActionListener{
             drawNode(g,node);
         }
     }
-
+    /**
+     *
+     * Draws a single node in a graph based on the game data.
+     * @param g the graphics object.
+     */
     private void drawNode(Graphics g, node_data n){
         geo_location oldLocation = n.getLocation();
         double x = scale(oldLocation.x(),minX,maxX,10,getWidth()-30);
         double y = scale(oldLocation.y(),minY,maxY,10,getHeight()-70);
-        //g.setColor(Color.BLUE);
-        //g.fillOval((int)(x),(int)(Math.abs(y-(getHeight()-30))),15,15);
-        //g.setColor(Color.MAGENTA);
-        //g.drawString(n.toString(),(int)(x),(int)(Math.abs(y-(getHeight()-30))));
         g.drawImage(nodesRes.get(0),(int)(x-10),(int) (Math.abs(y-(getHeight()-30-20))),40,40,null);
     }
 
+    /**
+     * Draws a single edge in a graph based on the game data.
+     * @param g the graphics object.
+     */
     private void drawEdge(Graphics g, edge_data edge){
         Graphics2D g2d = (Graphics2D)g;
         g2d.setColor(new Color(86,61,45));
@@ -112,6 +117,10 @@ public class GamePanel extends JPanel implements ActionListener{
         g2d.drawLine((int)(xSrc+5),(int)(Math.abs(ySrc-(getHeight()-30+5))),(int)(xDest+5),(int)(Math.abs(yDest-(getHeight()-30+5))));
     }
 
+    /**
+     * Draws the game pokemons based on the game data.
+     * @param g the graphics object.
+     */
     private void drawPokemons(Graphics g){
         Random random = new Random();
         random.setSeed(seed);
@@ -128,9 +137,16 @@ public class GamePanel extends JPanel implements ActionListener{
             //g.fillOval((int)(x),(int)(Math.abs(y-(getHeight()-30))),10,10);
             Graphics2D g2D = (Graphics2D) g;
             g2D.drawImage(pokemonsRes.get(random.nextInt(pokemonsRes.size())), (int)(x), (int)(Math.abs(y-(getHeight()-30-20))),50,50, null);
+            //g.setColor(Color.BLUE);
+            //g.setFont(new Font("TimesRoman",Font.BOLD,20));
+            //g2D.drawString(pokemon.getValue()+"",(int)(x),(int)(Math.abs(y-(getHeight()-30-20))));
         }
     }
 
+    /**
+     * Draws the game agents based on the game data.
+     * @param g the graphics object.
+     */
     private void drawAgents(Graphics g){
         ArrayList<GameAgent> agents = data.getAgents();
         for(GameAgent agent : agents){
@@ -140,35 +156,55 @@ public class GamePanel extends JPanel implements ActionListener{
             g.setColor(Color.GREEN);
             //g.fillOval((int)(x),(int)(Math.abs(y-(getHeight()-30))),10,10);
             g.drawImage(resources.getAgentResources().get(0),(int)(x-10),(int)(Math.abs(y-(getHeight()-50))),50,50,null);
-        }
-    }
-
-    private void drawTimer(Graphics g){
-        g.setColor(Color.BLACK);
-        g.setFont(new Font("TimesRoman",Font.BOLD,((getWidth()*getHeight())/25000)));
-        long miliseconds = data.getServer().timeToEnd();
-        long minutes = TimeUnit.MILLISECONDS.toMinutes(miliseconds);
-        long seconds = TimeUnit.MILLISECONDS.toSeconds(miliseconds);
-        String time = seconds < 10 ? "00:0"+seconds : "00:"+seconds;
-        g.drawString(time, getWidth()-(g.getFont().getSize()*4),getHeight()/10);
-    }
-
-    private void drawScore(Graphics g){
-        int space = widthMargin;
-        for(int i = 0; i < data.getAgents().size(); i++) {
-            g.drawImage(resources.getPokaball(),getWidth()-space,20,40,40,null);
-            space += widthMargin/2.25;
+            g.setColor(Color.red);
+            g.setFont(new Font("TimesRoman",Font.BOLD,20));
+            g.drawString(agent.getValue()+"",(int)(x-10),(int)(Math.abs(y-(getHeight()-50))));
         }
     }
 
     /**
+     * Draws the game timer based on the game data.
+     * @param g the graphics object.
+     */
+    private void drawTimer(Graphics g){
+        g.setColor(Color.BLACK);
+        //g.setFont(new Font("TimesRoman",Font.BOLD,((getWidth()*getHeight())/25000)));
+        g.setFont(new Font("TimesRoman",Font.BOLD,25));
+        long miliseconds = data.getServer().timeToEnd();
+        long minutes = TimeUnit.MILLISECONDS.toMinutes(miliseconds);
+        long seconds = TimeUnit.MILLISECONDS.toSeconds(miliseconds);
+        String time = seconds < 10 ? "00:0"+seconds : "00:"+seconds;
+        g.drawString("TIME: "+time, getWidth()-(g.getFont().getSize()*6),getHeight()/17);
+    }
+
+    /**
+     * Draws the game score based on the game data.
+     * @param g the graphics object.
+     */
+    private void drawScore(Graphics g){
+        g.setColor(Color.black);
+        g.setFont(new Font("TimesRoman",Font.BOLD,25));
+        g.drawString("SCORE: "+data.getScore(), getWidth()-(g.getFont().getSize()*13),getHeight()/17);
+    }
+
+    /**
+     * Draws the game moves based on the game data.
+     * @param g the graphics object.
+     */
+    private void drawMoves(Graphics g){
+        g.setColor(Color.black);
+        g.setFont(new Font("TimesRoman",Font.BOLD,25));
+        g.drawString("MOVES: "+data.getMoves(), getWidth()-(g.getFont().getSize()*13),getHeight()/9);
+    }
+
+    /**
      *
-     * @param data denote some data to be scaled
+     * @param data denotes some data to be scaled
      * @param r_min the minimum of the range of your data
      * @param r_max the maximum of the range of your data
      * @param t_min the minimum of the range of your desired target scaling
      * @param t_max the maximum of the range of your desired target scaling
-     * @return
+     * @return the new parameter x or y after scaling.
      */
     private double scale(double data, double r_min, double r_max,
                          double t_min, double t_max)
@@ -177,6 +213,10 @@ public class GamePanel extends JPanel implements ActionListener{
         return res;
     }
 
+    /**
+     * Returns the minimum x (geo location x) value compared to all nodes.
+     * @return the minimum x value.
+     */
     private double getMinX(){
         directed_weighted_graph graph = data.getGraph();
         int n = graph.nodeSize();
@@ -188,6 +228,10 @@ public class GamePanel extends JPanel implements ActionListener{
         return minimum;
     }
 
+    /**
+     * Returns the minimum y (geo location y) value compared to all nodes.
+     * @return the minimum y value of all nodes.
+     */
     private double getMinY(){
         directed_weighted_graph graph = data.getGraph();
         int n = graph.nodeSize();
@@ -199,6 +243,10 @@ public class GamePanel extends JPanel implements ActionListener{
         return minimum;
     }
 
+    /**
+     * Returns the maximum x (geo location x) value compared to all nodes.
+     * @return the maximum x value of all nodes.
+     */
     private double getMaxX(){
         directed_weighted_graph graph = data.getGraph();
         int n = graph.nodeSize();
@@ -210,6 +258,10 @@ public class GamePanel extends JPanel implements ActionListener{
         return maximum;
     }
 
+    /**
+     * Returns the maximum y (geo location y) value compared to all nodes.
+     * @return the maximum y value of all nodes.
+     */
     private double getMaxY(){
         directed_weighted_graph graph = data.getGraph();
         int n = graph.nodeSize();
@@ -221,9 +273,13 @@ public class GamePanel extends JPanel implements ActionListener{
         return maximum;
     }
 
+    /**
+     * Override of the actionPerforms method.
+     * @param e
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
-        update(data);
+        update(data); // Repaints the screen (each 60 milliseconds).
     }
 
 }

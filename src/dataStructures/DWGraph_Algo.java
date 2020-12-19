@@ -1,20 +1,31 @@
-package implementation;
+package dataStructures;
 import api.*;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import implementation.util.AlgoHelper;
-import implementation.util.GraphJsonDeserializer;
-import implementation.util.Pair;
-
+import dataStructures.util.AlgoHelper;
+import dataStructures.util.GraphJsonDeserializer;
+import dataStructures.util.Pair;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.PrintWriter;
 import java.util.*;
 
+/**
+ * This class represents a Directed (positive) Weighted Graph Theory Algorithms including:
+ * 0. clone(); (copy)
+ * 1. init(graph);
+ * 2. isConnected(); // strongly (all ordered pais connected)
+ * 3. double shortestPathDist(int src, int dest);
+ * 4. List<node_data> shortestPath(int src, int dest);
+ * 5. Save(file); // JSON file
+ * 6. Load(file); // JSON file
+ */
+
 public class DWGraph_Algo implements dw_graph_algorithms{
+
     private directed_weighted_graph g; // the graph on which this set of algorithms operates on.
-    private AlgoHelper<node_data> algoHelper; // This class is used to manage temporal data (color, weight etc..).
+    private AlgoHelper<node_data> algoHelper; // This object is used to manage temporal data (color, weight etc..).
 
     /**
      * Default constructor
@@ -23,21 +34,38 @@ public class DWGraph_Algo implements dw_graph_algorithms{
         g = new DWGraph_DS();
     }
 
+    /**
+     * Init the graph on which this set of algorithms operates on.
+     * @param g - the graph to be initialized.
+     */
     @Override
     public void init(directed_weighted_graph g) {
         this.g = g;
     }
 
+    /**
+     * Return the underlying graph of which this class works.
+     * @return - a pointer to the graph on which this set of algorithms operates on.
+     */
     @Override
     public directed_weighted_graph getGraph() {
         return g;
     }
 
+    /**
+     * Compute a deep copy of this weighted graph.
+     * @return - a copy of this graph.
+     */
     @Override
     public directed_weighted_graph copy() {
         return new DWGraph_DS(g);
     }
 
+    /**
+     * Returns true if and only if (iff) there is a valid path from each node to each
+     * other node. NOTE: assume directional graph (all n*(n-1) ordered pairs).
+     * @return - true/false depends on if the graph is strongly connected.
+     */
     @Override
     public boolean isConnected() {
         if(g.nodeSize()==0)
@@ -45,19 +73,39 @@ public class DWGraph_Algo implements dw_graph_algorithms{
         return sccTarjan().size() == 1;
     }
 
+    /**
+     * returns the length of the shortest path between src to dest
+     * Note: if no such path --> returns -1
+     * @param src - start node
+     * @param dest - end (target) node
+     * @return - the shortest distance from source to destination.
+     */
     @Override
     public double shortestPathDist(int src, int dest) {
         node_data n1 = g.getNode(src), n2 = g.getNode(dest);
         if(n1 != null && n2 != null) { // If both src and dest exist.
             if(n1 == n2) // If it's the same node return zero distance.
                 return 0;
-            return dijkstra(n1, n2).getSecond(); // Perform dijkstra algorithm.
-            //return algoHelper.getWeight(n2); // After dijkstra the shortest path weight will be stored in the destination node.
+            Pair<HashMap<Integer,Integer>,Double> parentMapAnWeight = dijkstra(g.getNode(src), g.getNode(dest)); // Perform dijkstra algorithm.
+            if(parentMapAnWeight == null){ // Means there is no such path.
+                return -1;
+            }else {
+                return parentMapAnWeight.getSecond(); // Perform dijkstra.
+            }
         }else {
             return -1; // If one or both of the nodes are null, it means there is no path between these nodes.
         }
     }
 
+    /**
+     * returns the the shortest path between src to dest - as an ordered List of nodes:
+     * src--> n1-->n2-->...dest
+     * see: https://en.wikipedia.org/wiki/Shortest_path_problem
+     * Note if no such path --> returns null;
+     * @param src - start node
+     * @param dest - end (target) node
+     * @return a list representing the shortest path from src to dest (inclusive).
+     */
     @Override
     public List<node_data> shortestPath(int src, int dest) {
         node_data n1 = g.getNode(src), n2 = g.getNode(dest);
@@ -67,7 +115,13 @@ public class DWGraph_Algo implements dw_graph_algorithms{
                 list.add(n1); // add src nodes to the list.
                 return list;
             }
-            HashMap<Integer, Integer> parentMap = dijkstra(g.getNode(src), g.getNode(dest)).getFirst(); // Perform dijkstra.
+            HashMap<Integer, Integer> parentMap;
+            Pair<HashMap<Integer,Integer>,Double> parentMapAnWeight = dijkstra(g.getNode(src), g.getNode(dest));
+            if(parentMapAnWeight == null){ // Means there is no such path.
+                return null;
+            }else {
+                parentMap = dijkstra(g.getNode(src), g.getNode(dest)).getFirst(); // Perform dijkstra.
+            }
             node_data parent = n2;
             while (parent.getKey() != src) { // get all parents list from dest to src.
                 list.addFirst(parent); // Add this nodes in reverse order to the list.
@@ -125,6 +179,12 @@ public class DWGraph_Algo implements dw_graph_algorithms{
         return false;
     }
 
+    /**
+     * Tarjan's - Strongly Connected Components (SCC) algorithm implementation.
+     * This algorithm is implemented according to the pseudo code in the next video:
+     * https://www.youtube.com/watch?v=wUgWX0nc4NY
+     * @return a list of lists representing the strongly connected components.
+     */
     private List<List<Integer>> sccTarjan(){
         algoHelper = new AlgoHelper<>(); // Create AlgoHelper object for storing coloring data (Unvisited/visited nodes).
         List<List<Integer>> components = new ArrayList<>();
@@ -140,30 +200,41 @@ public class DWGraph_Algo implements dw_graph_algorithms{
         return components;
     }
 
+    /**
+     * DFS algorithm implementation used by Tarjan's algorithm.
+     * @param n - s starting node.
+     * @param components - the list of strongly connected components which need to be updated.
+     * @param time - to give each node an id.
+     * @param lowlink - the low link values according to the algorithm (The smallest node ids reachable from current node).
+     * @param ids - a unique id list for each node (to track if whether or not a node has been visited and to track the id's of each node).
+     * @param onStack - tracks if whether or not nodes are on the stack.
+     * @param stack - the stack containing the nodes.
+     */
     private void dfs(node_data n, List<List<Integer>> components, int time, int[] lowlink, int[] ids, boolean[] onStack, Stack<Integer> stack ){
-        int at = n.getKey();
-        stack.push(at);
-        onStack[at] = true;
-        lowlink[at] = ids[at] = time++;
-        algoHelper.storeTemporalColor(n,"GRAY");
-        for(edge_data e : g.getE(at)){
-            int to = e.getDest();
-            if(algoHelper.getColor(g.getNode(to)).equals("WHITE"))
-                dfs(g.getNode(to),components,time,lowlink,ids,onStack,stack);
-            if(onStack[to])
-                lowlink[at] = Math.min(lowlink[at],lowlink[to]);
+        int at = n.getKey(); // Denote the id of the node that we are currently at.
+        stack.push(at); // Push current node to the stack.
+        onStack[at] = true; // Mark the current node as being on the stack.
+        lowlink[at] = ids[at] = time++; // Give an id and a current low link value to the node.
+        algoHelper.storeTemporalColor(n,"GRAY"); // Mark current node as 'visited'.
+        for(edge_data e : g.getE(at)){ // Visit all the neighbors of the current node.
+            int to = e.getDest(); // Represents the id of the node that we are going to.
+            if(algoHelper.getColor(g.getNode(to)).equals("WHITE")) // If the node we are going to is unvisited.
+                dfs(g.getNode(to),components,time,lowlink,ids,onStack,stack); // Then visit it.
+            if(onStack[to]) // If the node that we are just came from is on the stack (after recursive call).
+                lowlink[at] = Math.min(lowlink[at],lowlink[to]); // Set the min low link value for the node that we are currently at.
         }
-        if(ids[at] == lowlink[at]){
-            Stack<Integer> component = new Stack<>();
+        // After visiting al the neighbors of the current node.
+        if(ids[at] == lowlink[at]){ // Check if we are on the beginning of a strongly connected component (by checking if the current id is equal to the current low link value).
+            Stack<Integer> component = new Stack<>(); // Build a stack which will hold the component.
             while (true){
-                int x = stack.pop();
-                component.add(x);
-                onStack[x] = false;
-                lowlink[x] = ids[at];
-                if(x == at)
+                int x = stack.pop(); // Pop of all the nodes inside the strongly connected component.
+                component.add(x); // Add this nodes to the strongly connected component list.
+                onStack[x] = false; // Mark node as not longer being on the stack.
+                lowlink[x] = ids[at]; // Make sure all nodes which are part of the strongly connected component have the same id.
+                if(x == at) // Once which reach the start of the strongly connected component, break the loop.
                     break;
             }
-            components.add(component);
+            components.add(component); // Finally add the strongly connected component to the list of strongly connected components.
         }
     }
 
@@ -174,7 +245,7 @@ public class DWGraph_Algo implements dw_graph_algorithms{
      * https://www.coursera.org/lecture/advanced-data-structures/core-dijkstras-algorithm-2ctyF
      * @param src - source node.
      * @param dest - destination node.
-     * @return A HashMap which represents parents hierarchy.
+     * @return A Pair of HashMap of the parent's path and the Double value of the shortest distance between src to dest.
      */
     private Pair<HashMap<Integer,Integer>,Double> dijkstra(node_data src, node_data dest){
         HashMap<Integer,Integer> parentMap = new HashMap<>(); // Parents hierarchy.

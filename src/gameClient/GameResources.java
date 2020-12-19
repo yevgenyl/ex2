@@ -1,8 +1,11 @@
 package gameClient;
-
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
+
+/**
+ * This class is responsible for handling the resources,images,icons and backgrounds of the game.
+ */
 
 public class GameResources {
     Image pikachu, bulbasaur, eevee, jigglypuff,meowth, squirtle;
@@ -34,11 +37,15 @@ public class GameResources {
         rock = new ImageIcon("./res/rock.png").getImage();
         pokaball = new ImageIcon("./res/pokaball.png").getImage();
         /**
-         * Login panel
+         * Login panel background
          */
         login = new ImageIcon("./res/login2.jpg").getImage();
     }
 
+    /**
+     * Returns pokemons resources images.
+     * @return an ArrayList of all image resources.
+     */
     public ArrayList<Image> getPokemonResources(){
         ArrayList<Image> pokemons = new ArrayList<>();
         pokemons.add(pikachu);
@@ -50,12 +57,20 @@ public class GameResources {
         return pokemons;
     }
 
+    /**
+     * Returns agents resources images.
+     * @return an ArrayList of all image resources.
+     */
     public ArrayList<Image> getAgentResources(){
         ArrayList<Image> agents = new ArrayList<>();
         agents.add(ash);
         return agents;
     }
 
+    /**
+     * Returns backgrounds resources images.
+     * @return an ArrayList of all image resources.
+     */
     public ArrayList<Image> getBackgroundsResources(){
         ArrayList<Image> backgrounds = new ArrayList<>();
         //backgrounds.add(background1);
@@ -63,16 +78,28 @@ public class GameResources {
         return backgrounds;
     }
 
+    /**
+     * Returns nodes resources images.
+     * @return an ArrayList of all image resources.
+     */
     public ArrayList<Image> getNodesResources(){
         ArrayList<Image> nodes = new ArrayList<>();
         nodes.add(rock);
         return nodes;
     }
 
+    /**
+     * Returns pokaball image.
+     * @return an image of pokaball.
+     */
     public Image getPokaball(){
         return pokaball;
     }
 
+    /**
+     * Returns login image.
+     * @return the background for the login panel.
+     */
     public Image getLoginBackground(){
         return login;
     }

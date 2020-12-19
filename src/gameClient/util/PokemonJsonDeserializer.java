@@ -1,12 +1,14 @@
 package gameClient.util;
-
 import com.google.gson.*;
 import gameClient.GamePokemon;
-import implementation.GeoLocation;
-
+import dataStructures.GeoLocation;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+
+/**
+ * This class is responsible for parsing the Json object representing the pokemons list from the server.
+ */
 
 public class PokemonJsonDeserializer implements JsonDeserializer<List<GamePokemon>> {
     @Override
