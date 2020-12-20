@@ -1,11 +1,12 @@
 # Pokemon Game Challenge Based on Graph Theory Algorithms
-
+### About:
 - This project was built as part of the Java OOP Course of the Computer Science Department at Ariel University 2020.
 
 - This project consists of two part:
   - **Part 1:** Contains an implementation of a directed (positive) weighted graph data structure and algorithms (located inside the **api** package).
   - **Part 2:** Contains an implementation of the game, the game logic and the graphical user interface (located inside the **gameClient** package).
-  
+- **Project contributors**: Evgueni Lachtchenov
+
 ### To try this game:
 Before running this game make sure that you have JDK version 11 or older installed on you machine.
 And then follow the instructions below:  
@@ -19,8 +20,6 @@ And then follow the instructions below:
 7) Another way of executing the `Jar` file in this project, is to double click on it and then selecting the id, and level from the GUI.
   
 - For more detailed information about the implementation of this project, the algorithms and the data structure. Please visit the Wiki page.
-
-- **Project contributors**: Evgueni Lachtchenov
 
 ### Below you can see a screenshot from one of the game's scenarios:
 ![Image of undirected weighted graph](https://github.com/yevgenyl/ex2/blob/master/git_res/PokemonGame2.png?raw=true)
