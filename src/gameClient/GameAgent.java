@@ -1,5 +1,5 @@
 package gameClient;
-import dataStructures.GeoLocation;
+import api.GeoLocation;
 
 /**
  * This class represents an agent (pokemon agent) character.

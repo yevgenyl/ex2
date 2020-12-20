@@ -6,8 +6,8 @@ import com.google.gson.JsonObject;
 import gameClient.util.AgentJsonDeserializer;
 import gameClient.util.GameGraphJsonDeserializer;
 import gameClient.util.PokemonJsonDeserializer;
-import dataStructures.DWGraph_Algo;
-import dataStructures.DWGraph_DS;
+import api.DWGraph_Algo;
+import api.DWGraph_DS;
 import java.util.*;
 
 /**
@@ -17,11 +17,11 @@ import java.util.*;
 public class GameData implements game_listener{
     private game_service game; // Reference to the game server.
     private directed_weighted_graph graph; // The graph on which this game will operate on.
-    ArrayList<GamePokemon> pokemons; // A list of pokemons that should be placed on the graph.
-    ArrayList<GameAgent> agents; // A list of agents that are currently on the graph.
-    dw_graph_algorithms graph_algorithms; // A set of algorithms which will operate on this game.
-    ArrayList<edge_data> pokemonsEdges; // The edges on which the pokemons located.
-    GameManager manager; // This class is responsible for managing update calls from the client.
+    private ArrayList<GamePokemon> pokemons; // A list of pokemons that should be placed on the graph.
+    private ArrayList<GameAgent> agents; // A list of agents that are currently on the graph.
+    private dw_graph_algorithms graph_algorithms; // A set of algorithms which will operate on this game.
+    private ArrayList<edge_data> pokemonsEdges; // The edges on which the pokemons located.
+    private GameManager manager; // This class is responsible for managing update calls from the client.
     boolean isInUpdate; // This variable is used for thread safety. denotes if data ia already in update process.
 
     /**

@@ -7,7 +7,7 @@ import java.util.ArrayList;
  */
 public class GameManager {
     private ArrayList<game_listener> listeners; // An ArrayList of all registered listeners for update events.
-    boolean isConsumed; // A flag used for thread safety.
+    private boolean isConsumed; // A flag used for thread safety.
 
     /**
      * Default constructor.

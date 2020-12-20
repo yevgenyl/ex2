@@ -1,5 +1,11 @@
 package gameClient;
 
+/**
+ * The main class of this game
+ * The main method can deal with two run types:
+ * 1) Login - opens the login GUI.
+ * 2) Command line (with id and scenario). For example: java -jar Ex2.java 123456789 12
+ */
 public class Ex2{
     public static void main(String[] args){
         if(args.length == 2){

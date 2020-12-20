@@ -15,13 +15,13 @@ import java.util.concurrent.TimeUnit;
 
 public class GamePanel extends JPanel implements ActionListener{
 
-    GameData data; // The data if the game.
-    GameResources resources; // The game resources class (holds images).
-    ArrayList<Image> pokemonsRes, agentsRes, backgroundsRes, nodesRes;
-    long seed; // desired seed for Random class usages.
-    double minX, minY, maxX, maxY; // Min/Max values of the geo location which represents the graph nodes.
-    int widthMargin , heightMargin; // The desired width/height margins.
-    Timer timer; // A timer used to display this panel at update rate of 60 milliseconds.
+    private GameData data; // The data if the game.
+    private GameResources resources; // The game resources class (holds images).
+    private ArrayList<Image> pokemonsRes, agentsRes, backgroundsRes, nodesRes;
+    private long seed; // desired seed for Random class usages.
+    private double minX, minY, maxX, maxY; // Min/Max values of the geo location which represents the graph nodes.
+    private int widthMargin , heightMargin; // The desired width/height margins.
+    private Timer timer; // A timer used to display this panel at update rate of 60 milliseconds.
 
     /**
      * Initialization constructor based on the game data (graph, agents, pokemons.. etc).

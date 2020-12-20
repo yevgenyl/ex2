@@ -8,10 +8,10 @@ import java.util.ArrayList;
  */
 
 public class GameResources {
-    Image pikachu, bulbasaur, eevee, jigglypuff,meowth, squirtle;
-    Image ash;
-    Image background1, background2, login;
-    Image rock, pokaball;
+    private Image pikachu, bulbasaur, eevee, jigglypuff,meowth, squirtle;
+    private Image ash;
+    private Image background1, background2, login;
+    private Image rock, pokaball;
     public GameResources(){
         /**
          * Pokemons

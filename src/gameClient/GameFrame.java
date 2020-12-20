@@ -7,9 +7,9 @@ import java.awt.*;
  */
 public class GameFrame extends JFrame {
 
-    GamePanel gamePanel; // The main game panel
-    LoginPanel loginPanel; // The login panel
-    BackgroundPanel container; // The panel which hold the background.
+    private GamePanel gamePanel; // The main game panel
+    private LoginPanel loginPanel; // The login panel
+    private BackgroundPanel container; // The panel which hold the background.
 
     /**
      * Default constructor.
@@ -62,6 +62,14 @@ public class GameFrame extends JFrame {
         this.setSize(dim.width/2+dim.width/4,dim.height/2+dim.height/4);
         this.setLocation(dim.width/2 - this.getSize().width/2,dim.height/2 - this.getSize().height/2);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    }
+
+    /**
+     * Returns a pointer to the container panel (background)
+     * @return the container panel.
+     */
+    public BackgroundPanel getContainer() {
+        return container;
     }
 
     /**

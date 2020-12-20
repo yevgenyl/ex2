@@ -3,7 +3,7 @@ import Server.Game_Server_Ex2;
 import api.*;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import dataStructures.util.Pair;
+import api.util.Pair;
 import java.util.*;
 
 /**
@@ -13,20 +13,19 @@ import java.util.*;
 public class Game implements Runnable{
 
     private static game_service game; // Server instance.
-    GameData data; // All stuff related to the game data (agents, pokemons, graphs...).
-    int numberOfAgents, numOfPokemons, id, level; // Number of pokemons and agents. User id and level choice.
-    HashMap<Integer,Integer> visited; // Maps agents for targets (pokemons). used by the path updating method.
-    List<node_data>[] agentsPath; // Array of lists representing the current path for each agent (array indexes by agents id's).
-    boolean[] needToUpdate; // Tracks agent's need to update their path (when their current path ends).
-    int[] pathIndex, loopCounter;; // Next index in path for each agent. How many loops the agent performed (means agent stuck in a loop).
-    enum state {CATCH,COMPLETE,RELAX};
+    private GameData data; // All stuff related to the game data (agents, pokemons, graphs...).
+    private int numberOfAgents, numOfPokemons, id, level; // Number of pokemons and agents. User id and level choice.
+    private HashMap<Integer,Integer> visited; // Maps agents for targets (pokemons). used by the path updating method.
+    private List<node_data>[] agentsPath; // Array of lists representing the current path for each agent (array indexes by agents id's).
+    private boolean[] needToUpdate; // Tracks agent's need to update their path (when their current path ends).
+    private int[] pathIndex, loopCounter;; // Next index in path for each agent. How many loops the agent performed (means agent stuck in a loop).
 
     //Testing improved algorithm
-    long[][] timesManager; // Time management data for each agent.
-    long last_sleep; // Last actual sleep time of the loop.
-    final int ID = 0, SLEEP = 1, COMPLETE = 2, STATE = 3; // Constants used for timesManager array (for convenience).
-    boolean delayed; // If there was an unexpected delay.
-    List<node_data> lastPath; // Last path of the specified agent (before updating).
+    private long[][] timesManager; // Time management data for each agent.
+    private long last_sleep; // Last actual sleep time of the loop.
+    private final int ID = 0, SLEEP = 1, COMPLETE = 2, STATE = 3; // Constants used for timesManager array (for convenience).
+    private boolean delayed; // If there was an unexpected delay.
+    private List<node_data> lastPath; // Last path of the specified agent (before updating).
 
     /**
      * Initialization constructor

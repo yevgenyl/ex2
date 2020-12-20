@@ -10,11 +10,11 @@ import java.awt.event.ActionListener;
 
 public class LoginPanel extends JPanel implements ActionListener {
 
-    JButton playButton; // The play button.
-    GameFrame gameFrame; // The main frame.
-    GamePanel gamePanel; // The game graphical user interface.
-    LoginBackgroundPanel contentPane; // The panel used to wrap this login screen.
-    JTextField idTextField, levelField; // The id and scenario text fields.
+    private JButton playButton; // The play button.
+    private GameFrame gameFrame; // The main frame.
+    private GamePanel gamePanel; // The game graphical user interface.
+    private LoginBackgroundPanel contentPane; // The panel used to wrap this login screen.
+    private JTextField idTextField, levelField; // The id and scenario text fields.
 
     /**
      * Initialization constructor
@@ -95,7 +95,7 @@ public class LoginPanel extends JPanel implements ActionListener {
             gamePanel = new GamePanel(game.getData());
             gameFrame.remove(this); // Remove this panel.
             this.remove(contentPane); // Remove content pane.
-            gameFrame.remove(gameFrame.container); // Remove box layout.
+            gameFrame.remove(gameFrame.getContainer()); // Remove box layout.
             gameFrame.add(gamePanel); // Add game panel.
             gameFrame.validate();
             gameFrame.repaint();

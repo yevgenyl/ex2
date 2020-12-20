@@ -1,6 +1,6 @@
 package gameClient;
 import api.edge_data;
-import dataStructures.GeoLocation;
+import api.GeoLocation;
 import java.util.Objects;
 
 /**

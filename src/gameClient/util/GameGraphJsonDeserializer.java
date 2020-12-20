@@ -1,9 +1,9 @@
 package gameClient.util;
 import api.*;
 import com.google.gson.*;
-import dataStructures.DWGraph_DS;
-import dataStructures.GeoLocation;
-import dataStructures.NodeData;
+import api.DWGraph_DS;
+import api.GeoLocation;
+import api.NodeData;
 import java.lang.reflect.Type;
 
 /**

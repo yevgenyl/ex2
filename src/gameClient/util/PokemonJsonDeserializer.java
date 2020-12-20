@@ -1,7 +1,7 @@
 package gameClient.util;
 import com.google.gson.*;
 import gameClient.GamePokemon;
-import dataStructures.GeoLocation;
+import api.GeoLocation;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
