@@ -1,4 +1,4 @@
-# Pokemon Game Challenge Based on Graph Theory Algorithms
+# Pokemon Challenge Game Based on Graph Theory Algorithms
 ### About:
 - This project was built as part of the Java OOP Course of the Computer Science Department at Ariel University 2020.
 
