@@ -72,6 +72,7 @@ public class Game implements Runnable{
                 }
             manageTimes(); // Manage how long to sleep based on time calculation for each agent.
         }
+        System.out.println(game);
     }
 
     /**
