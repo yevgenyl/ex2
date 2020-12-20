@@ -19,7 +19,7 @@ And then follow the instructions below:
     - `java -jar Ex2.jar 123456789 12`
 7) Another way of executing the `Jar` file in this project, is to double click on it and then selecting the id, and level from the GUI.
   
-- For more detailed information about the implementation of this project, the algorithms and the data structure. Please visit the Wiki page.
+- For more detailed information about the implementation of this project, the algorithms and the data structure. Please visit the **Wiki** page.
 
 ### Below you can see an example of scenario 23 from the game:
 ![Image of undirected weighted graph](https://github.com/yevgenyl/ex2/blob/master/git_res/PokemonGame2.png?raw=true)
